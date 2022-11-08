@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">IoTapp</string>
+    <string name="estado_de_puertas">Estado de puertas:</string>
+    <string name="nivel_de_agua">Nivel de Agua:</string>
+    <string name="abrir_puerta">Abrir Puerta</string>
+    <string name="cerrar_puerta">Cerrar Puerta</string>
+    <string name="puertaCerrada">Puerta Cerrada</string>
+    <string name="puertaAbierta">Puerta Abierta</string>
+    <string name="dispositivos_vinculados">Dispositivos Vinculados</string>
+</resources>
