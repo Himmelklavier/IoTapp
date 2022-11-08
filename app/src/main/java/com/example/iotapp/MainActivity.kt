@@ -19,13 +19,14 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.*
+import kotlin.system.exitProcess
 
 
 class MainActivity : AppCompatActivity() {
 
     //-------------------------------------------
     var bluetoothIn: Handler? = null
-    val handlerState = 0
+    var handlerState = 0
     private var btAdapter: BluetoothAdapter? = null
     private var btSocket: BluetoothSocket? = null
     private val DataStringIN = StringBuilder()
@@ -43,44 +44,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        bluetoothIn = object : Handler() {
-            override fun handleMessage(msg: Message) {
-                if (msg.what == handlerState) {
-
-                    var myChar = msg.obj as Char
-
-                    if (myChar == 'F') {
-                        textView3.setText("@string/puertaAbierta")
-                    }
-                    if (myChar == 'T') {
-                        textView3.setText("@string/puertaCerrada")
-                    }
-
-                    if (myChar == 'L') {
-                        textView4.setText("Bajo")
-                    }
-
-                    if (myChar == 'M') {
-                        textView4.setText("Medio")
-                    }
-
-                    if (myChar == 'H') {
-                        textView4.setText("Alto")
-                    }
-
-                    if (myChar == 'E') {
-                        textView4.setText("Error")
-                    }
-
-
-
-                }
-            }
-        }
-
         btAdapter = BluetoothAdapter.getDefaultAdapter()
         VerificarEstadoBT()
-
 
         val abrirButton: Button = findViewById(R.id.button)
         val cerrarButton: Button = findViewById(R.id.button2)
@@ -90,12 +55,12 @@ class MainActivity : AppCompatActivity() {
         abrirButton.setOnClickListener {
             estadoPuertasTextView.text = getString(R.string.puertaAbierta)
             puertasImage.setImageResource(R.drawable.puertasabiertas)
-            MyConexionBT!!.write(false)
+            MyConexionBT!!.write('f')
         }
         cerrarButton.setOnClickListener {
             estadoPuertasTextView.text = getString(R.string.puertaCerrada)
             puertasImage.setImageResource(R.drawable.puertascerradas)
-            MyConexionBT!!.write(true)
+            MyConexionBT!!.write('t')
         }
        /* btnDesconectar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,6 +76,43 @@ class MainActivity : AppCompatActivity() {
                 finish();
             }
         });*/
+        val intent = intent
+        val address = getIntent().getStringExtra(extraDeviceAddress)
+
+        bluetoothIn = object : Handler() {
+            override fun handleMessage(msg: Message) {
+                if (msg.what == handlerState) {
+
+                    var myChar = msg.obj as Char
+                    val msgPuerta: TextView = findViewById(R.id.textView3)
+                    val msgSensor: TextView = findViewById(R.id.textView4)
+
+                    if (myChar == 'F') {
+                        msgPuerta.text = ("Puerta Abierta")
+                    }
+                    if (myChar == 'T') {
+                        msgPuerta.text = ("Puerta Cerrada")
+                    }
+
+                    if (myChar == 'L') {
+                        msgSensor.text = ("Bajo")
+                    }
+
+                    if (myChar == 'M') {
+                        msgSensor.text = ("Medio")
+                    }
+
+                    if (myChar == 'H') {
+                        msgSensor.text = ("Alto")
+                    }
+
+                    if (myChar == 'E') {
+                        msgSensor.text = ("Error")
+                    }
+
+                }
+            }
+        }
 
     }
 
@@ -127,8 +129,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val intent = intent
-        address = intent.getStringExtra(DispositivosVinculados.EXTRA_DEVICE_ADDRESS)
+
+
+
         //Setea la direccion MAC
         val device = btAdapter!!.getRemoteDevice(address)
         try {
@@ -236,13 +239,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         //Envio de trama
-        fun write(input: Boolean) {
+        fun write(input: Char) {
             try {
                 mmOutStream!!.write(input.toByteArray())
-            } catch (e: IOException) {
+            } catch (e: Exception) {
                 //si no es posible enviar datos se cierra la conexión
-                Toast.makeText(getBaseContext(), "La Conexión fallo", Toast.LENGTH_LONG).show()
-                finish()
+                Toast.makeText(this, "La Conexión fallo", Toast.LENGTH_LONG).show()
+                exitProcess(0)
             }
         }
     }

@@ -1,9 +1,7 @@
 package com.example.iotapp
 
 import android.Manifest
-import android.R
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothAdapter.getDefaultAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -24,10 +22,11 @@ class DispositivosVinculados : AppCompatActivity() {
     private val TAG = "DispositivosVinculados"
 
     // Declaracion de ListView
-    var idLista:ListView = findViewById<View>(R.id.IdLista) as ListView
+    var idLista:ListView = findViewById<View>(R.id.idLista) as ListView
+
 
     // String que se enviara a la actividad principal, mainactivity
-    var EXTRA_DEVICE_ADDRESS = "device_address"
+    var extraDeviceAddress = "device_address"
 
     // Declaracion de campos
     /*private var mBtAdapter: BluetoothAdapter? = null*/
@@ -58,7 +57,7 @@ class DispositivosVinculados : AppCompatActivity() {
             val pairedDevices: Set<*> = mBtAdapter!!.bondedDevices
             if (pairedDevices.isNotEmpty()) {
                 for (device in pairedDevices) {
-                    mPairedDevicesArrayAdapter.add(device.name + "\n" + device.address)
+                    mPairedDevicesArrayAdapter.add(device.toString() + "\n" + extraDeviceAddress)
                 }
             }
         }
@@ -74,7 +73,7 @@ class DispositivosVinculados : AppCompatActivity() {
 
             // Realiza un intent para iniciar la siguiente actividad
             val intend = Intent(this@DispositivosVinculados, MainActivity::class.java)
-            intend.putExtra(EXTRA_DEVICE_ADDRESS, address)
+            intend.putExtra(extraDeviceAddress, address)
             startActivity(intend)
         }
 

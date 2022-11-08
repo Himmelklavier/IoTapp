@@ -100,9 +100,11 @@
         android:layout_height="200dp"
         android:layout_marginTop="64dp"
         android:layout_marginBottom="64dp"
+        android:contentDescription="@string/estado_de_puertas"
         app:layout_constraintBottom_toTopOf="@+id/textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/puertascerradas"
-        tools:layout_editor_absoluteX="0dp" />
+        app:srcCompat="@drawable/puertascerradas" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
