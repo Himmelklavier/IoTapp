@@ -22,6 +22,7 @@ import java.util.*
 import kotlin.system.exitProcess
 
 
+
 class MainActivity : AppCompatActivity() {
 
     //-------------------------------------------
@@ -29,11 +30,12 @@ class MainActivity : AppCompatActivity() {
     var handlerState = 0
     private var btAdapter: BluetoothAdapter? = null
     private var btSocket: BluetoothSocket? = null
-    private val DataStringIN = StringBuilder()
-    private var MyConexionBT: ConnectedThread? = null
-
+/*    private val DataStringIN = StringBuilder()
+* private de extrdevicaadress lo agegué yo*/
+    private var myConexionBT: ConnectedThread? = null
+    private var extraDeviceAddress = "device_address"
     // Identificador unico de servicio - SPP UUID
-    private val BTMODULEUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+    private val btmoduleuuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
     // String para la direccion MAC
     private var address: String? = null
@@ -45,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btAdapter = BluetoothAdapter.getDefaultAdapter()
-        VerificarEstadoBT()
+        verificarEstadoBT()
 
         val abrirButton: Button = findViewById(R.id.button)
         val cerrarButton: Button = findViewById(R.id.button2)
@@ -55,12 +57,12 @@ class MainActivity : AppCompatActivity() {
         abrirButton.setOnClickListener {
             estadoPuertasTextView.text = getString(R.string.puertaAbierta)
             puertasImage.setImageResource(R.drawable.puertasabiertas)
-            MyConexionBT!!.write('f')
+            myConexionBT!!.write('f')
         }
         cerrarButton.setOnClickListener {
             estadoPuertasTextView.text = getString(R.string.puertaCerrada)
             puertasImage.setImageResource(R.drawable.puertascerradas)
-            MyConexionBT!!.write('t')
+            myConexionBT!!.write('t')
         }
        /* btnDesconectar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,14 +78,14 @@ class MainActivity : AppCompatActivity() {
                 finish();
             }
         });*/
-        val intent = intent
-        val address = getIntent().getStringExtra(extraDeviceAddress)
+        /*val intent = intent*/
+        address = intent.getStringExtra(extraDeviceAddress)
 
         bluetoothIn = object : Handler() {
             override fun handleMessage(msg: Message) {
                 if (msg.what == handlerState) {
 
-                    var myChar = msg.obj as Char
+                    val myChar = msg.obj as Char
                     val msgPuerta: TextView = findViewById(R.id.textView3)
                     val msgSensor: TextView = findViewById(R.id.textView4)
 
@@ -123,7 +125,7 @@ class MainActivity : AppCompatActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
         }
-        return device.createRfcommSocketToServiceRecord(BTMODULEUUID)
+        return device.createRfcommSocketToServiceRecord(btmoduleuuid)
         //creates secure outgoing connection with BT device using UUID
     }
 
@@ -166,8 +168,8 @@ class MainActivity : AppCompatActivity() {
             } catch (e2: IOException) {
             }
         }
-        MyConexionBT = ConnectedThread(btSocket)
-        MyConexionBT!!.start()
+        myConexionBT = ConnectedThread(btSocket)
+        myConexionBT!!.start()
     }
 
     override fun onPause() {
@@ -180,7 +182,7 @@ class MainActivity : AppCompatActivity() {
 
     //Comprueba que el dispositivo Bluetooth
     //está disponible y solicita que se active si está desactivado
-    private fun VerificarEstadoBT() {
+    private fun verificarEstadoBT() {
         if (btAdapter == null) {
             Toast.makeText(baseContext, "El dispositivo no soporta bluetooth", Toast.LENGTH_LONG)
                 .show()
@@ -208,16 +210,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     //Crea la clase que permite crear el evento de conexion
-    private class ConnectedThread(socket: BluetoothSocket?) : Thread() {
+    inner class ConnectedThread(socket: BluetoothSocket?) : Thread() {
+        /*private val mmInStream: InputStream = mmSocket.inputStream
+        private val mmOutStream: OutputStream = mmSocket.outputStream
+        private val mmBuffer: ByteArray = ByteArray(1024) // mmBuffer store for the stream*/
+
         private val mmInStream: InputStream?
         private val mmOutStream: OutputStream?
+
 
         init {
             var tmpIn: InputStream? = null
             var tmpOut: OutputStream? = null
             try {
-                tmpIn = socket!!.inputStream
-                tmpOut = socket!!.outputStream
+                tmpIn = socket?.inputStream
+                tmpOut = socket?.outputStream
             } catch (e: IOException) {
             }
             mmInStream = tmpIn
@@ -225,13 +232,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun run() {
-            val byte_in = ByteArray(1)
+            val bytein = ByteArray(1)
             // Se mantiene en modo escucha para determinar el ingreso de datos
             while (true) {
                 try {
-                    mmInStream!!.read(byte_in)
-                    val ch = Char(byte_in[0].toUShort())
-                    bluetoothIn.obtainMessage(handlerState, ch).sendToTarget()
+                    mmInStream!!.read(bytein)
+                    val ch = Char(bytein[0].toUShort())
+                    bluetoothIn?.obtainMessage(handlerState, ch)?.sendToTarget()
                 } catch (e: IOException) {
                     break
                 }
@@ -241,10 +248,14 @@ class MainActivity : AppCompatActivity() {
         //Envio de trama
         fun write(input: Char) {
             try {
-                mmOutStream!!.write(input.toByteArray())
+                /*val send: ByteArray = input.getBytes()
+                mChatService.write(send)*/
+                val bytes: Byte = input.code.toByte()
+                val send = byteArrayOf(bytes)
+                mmOutStream!!.write(send)
             } catch (e: Exception) {
                 //si no es posible enviar datos se cierra la conexión
-                Toast.makeText(this, "La Conexión fallo", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MainActivity, "La Conexión fallo", Toast.LENGTH_LONG).show()
                 exitProcess(0)
             }
         }

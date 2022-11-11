@@ -2,6 +2,7 @@ package com.example.iotapp
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothAdapter.getDefaultAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -19,20 +20,20 @@ import androidx.core.app.ActivityCompat
 class DispositivosVinculados : AppCompatActivity() {
 
     // Depuración de LOGCAT
-    private val TAG = "DispositivosVinculados"
+    private val tag = "DispositivosVinculados"
 
-    // Declaracion de ListView
-    var idLista:ListView = findViewById<View>(R.id.idLista) as ListView
+    // Declaracion de ListView Sebas añadió private
+    private var idLista:ListView = findViewById<View>(R.id.idLista) as ListView
 
 
-    // String que se enviara a la actividad principal, mainactivity
-    var extraDeviceAddress = "device_address"
+    // String que se enviara a la actividad principal, mainactivity Sebas añadió private
+    private var extraDeviceAddress = "device_address"
 
     // Declaracion de campos
-    /*private var mBtAdapter: BluetoothAdapter? = null*/
-    val mBtAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-    /*private var mPairedDevicesArrayAdapter: ArrayAdapter<*>? = null*/
-    var mPairedDevicesArrayAdapter = ArrayAdapter<Any?>(this, R.layout.dispositivos_encontrados)
+    /*private var mBtAdapter: BluetoothAdapter? = null //Sebas añadió private*/
+    private val mBtAdapter: BluetoothAdapter? = getDefaultAdapter()
+    /*private var mPairedDevicesArrayAdapter: ArrayAdapter<*>? = null // Sebas añadió private*/
+    private var mPairedDevicesArrayAdapter = ArrayAdapter<Any?>(this, R.layout.dispositivos_encontrados)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +44,7 @@ class DispositivosVinculados : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         //---------------------------------------------------------------------
-        VerificarEstadoBT()
+        verificarEstadoBT()
         mPairedDevicesArrayAdapter = ArrayAdapter<Any?>(this, R.layout.dispositivos_encontrados)
         //var idLista = findViewById<View>(R.id.IdLista) as ListView
         idLista.adapter = mPairedDevicesArrayAdapter
@@ -66,7 +67,8 @@ class DispositivosVinculados : AppCompatActivity() {
 
     // Configura un (on-click) para la lista
     private val mDeviceClickListener =
-        OnItemClickListener { av, v, arg2, arg3 -> // Obtener la dirección MAC del dispositivo
+        //OnItemClickListener { av, v, arg2, arg3 -> // Obtener la dirección MAC del dispositivo
+        OnItemClickListener { _, v, _, _ -> // Obtener la dirección MAC del dispositivo
             val info = (v as TextView).text.toString()
             val address = info.substring(info.length - 17)
             finishAffinity()
@@ -77,7 +79,7 @@ class DispositivosVinculados : AppCompatActivity() {
             startActivity(intend)
         }
 
-    private fun VerificarEstadoBT() {
+    private fun verificarEstadoBT() {
         // Comprueba que el dispositivo tiene Bluetooth y que está encendido.
         //mBtAdapter = BluetoothAdapter.getDefaultAdapter()
         if (mBtAdapter == null) {
@@ -85,7 +87,7 @@ class DispositivosVinculados : AppCompatActivity() {
                 .show()
         } else {
             if (mBtAdapter.isEnabled) {
-                Log.d(TAG, "...Bluetooth Activado...")
+                Log.d(tag, "...Bluetooth Activado...")
             } else {
                 //Solicita al usuario que active Bluetooth
                 val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
