@@ -7,4 +7,10 @@
     <string name="puertaCerrada">Puerta Cerrada</string>
     <string name="puertaAbierta">Puerta Abierta</string>
     <string name="dispositivos_vinculados">Dispositivos Vinculados</string>
+    <string name="puertaAbiertatxt">Puerta Abierta</string>
+    <string name="puertaCerradatxt">Puerta Cerrada</string>
+    <string name="bajo">Bajo</string>
+    <string name="medio">Medio</string>
+    <string name="alto">Alto</string>
+    <string name="error">Error</string>
 </resources>
