@@ -1,0 +1,148 @@
+#include <SoftwareSerial.h>
+#include <Servo.h>
+
+SoftwareSerial BT(3, 2);
+const int LEDVerde = 13;
+const int LEDAmarillo = 12;
+const int LEDRojo = 11;
+
+//*************************
+int sensorAgua = A0;
+int LDRPin = A1;
+bool puertaCerrada = true;
+Servo servoMotor;
+char nombreBT[10] = "IoT_BT";
+char velocidad = '4';  //9600
+char pin[5] = "1234";
+//*************************
+
+
+void setup() {
+  BT.begin(9600);
+  Serial.begin(9600);
+  pinMode(LEDVerde, OUTPUT);
+  pinMode(LEDAmarillo, OUTPUT);
+  pinMode(LEDRojo, OUTPUT);
+  //***************************
+  servoMotor.attach(9);
+  servoMotor.write(0);
+  Serial.println("-------------CONFIGURACION BT ------------");
+  Serial.print("AT+NAME : ");
+  Serial.print(nombreBT);
+  delay(1000);
+  Serial.println(" ");
+  Serial.print("AT+BAUD : ");
+  Serial.print(velocidad);
+  delay(1000);
+  Serial.println(" ");
+  Serial.print("AT+PIN : ");
+  Serial.print(pin);
+  delay(1000);
+  Serial.println(" ");
+  Serial.println("--------------------------------------------");
+}
+
+void loop() {
+  btUso();
+  sensores();
+  delay(3000);
+}
+
+void sensores() {
+  if (analogRead(A1) > 200) {
+    if (analogRead(A0) <= 300) {
+      digitalWrite(LEDVerde, HIGH);
+      digitalWrite(LEDAmarillo, LOW);
+      digitalWrite(LEDRojo, LOW);
+      puertaCerrada = true;
+      servoMotor.write(89);
+      //BT.write('T');
+      //BT.write('B');
+      print(puertaCerrada);
+    } else if (analogRead(A0) > 300 && analogRead(A0) < 500) {
+      digitalWrite(LEDVerde, LOW);
+      digitalWrite(LEDAmarillo, HIGH);
+      digitalWrite(LEDRojo, LOW);
+      puertaCerrada = true;
+      servoMotor.write(89);
+      //BT.write('T');
+      //BT.write('M');
+      print(puertaCerrada);
+    } else if (analogRead(A0) > 500) {
+      digitalWrite(LEDVerde, LOW);
+      digitalWrite(LEDAmarillo, LOW);
+      digitalWrite(LEDRojo, HIGH);
+      puertaCerrada = false;
+      servoMotor.write(00);
+      //BT.write('F');
+      //BT.write('A');
+      print(puertaCerrada);
+    } else {  //Error
+      digitalWrite(LEDVerde, HIGH);
+      digitalWrite(LEDAmarillo, HIGH);
+      digitalWrite(LEDRojo, HIGH);
+      Serial.println("ERROR - REVISE SU DISPOSITIVO");
+    }
+  } else if (analogRead(A1) < 200) {
+    puertaCerrada = false;
+    //BT.write('F');
+    servoMotor.write(00);
+    digitalWrite(LEDVerde, LOW);
+    digitalWrite(LEDAmarillo, LOW);
+    digitalWrite(LEDRojo, HIGH);
+    print(puertaCerrada);
+    delay(5000);
+  }
+}
+
+void print(bool puertaCerrada) {
+  Serial.println("----***---***---***---***---");
+  if (puertaCerrada == true) {
+    BT.write('T');
+    Serial.println("Puerta cerrada");
+  } else {
+    BT.write('F');
+    Serial.println("Puerta Abierta");
+  }
+  if (analogRead(A0) <= 300) {
+    BT.write('B');
+  } else if (analogRead(A0) > 300 && analogRead(A0) < 500) {
+    BT.write('M');
+  } else if (analogRead(A0) > 500) {
+    BT.write('A');
+  }
+  Serial.print("Nivel de agua: ");
+  Serial.println(analogRead(A0));
+  Serial.print("Nivel de luz:");
+  Serial.println(analogRead(A1));
+  Serial.println(" ");
+}
+
+
+
+void btUso() {
+  //Leer si hay información
+  if (BT.available()) {
+    //Serial.write(BT.read());
+    char msg = BT.read();
+
+    if (msg == 't') {
+      digitalWrite(LEDVerde, HIGH);
+      digitalWrite(LEDAmarillo, LOW);
+      digitalWrite(LEDRojo, LOW);
+      puertaCerrada = true;
+      servoMotor.write(89);
+      Serial.println("Celular envio t");
+      print(puertaCerrada);
+    } else if (msg == 'f') {
+      puertaCerrada = false;
+      servoMotor.write(00);
+      digitalWrite(LEDVerde, LOW);
+      digitalWrite(LEDAmarillo, LOW);
+      digitalWrite(LEDRojo, HIGH);
+      Serial.println("Celular envio f");
+      print(puertaCerrada);
+      delay(5000);
+    }
+  }
+}
